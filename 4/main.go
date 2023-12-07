@@ -19,8 +19,8 @@ func main() {
 }
 
 func task(lines []string) error {
-	total := 0
-	for _, line := range lines {
+	cards := make([]int, len(lines))
+	for i, line := range lines {
 		line := line[strings.Index(line, ":")+2:]
 		before, after, _ := strings.Cut(line, " | ")
 		winners := strings.Fields(before)
@@ -28,16 +28,25 @@ func task(lines []string) error {
 		score := 0
 		for _, winner := range winners {
 			if slices.Contains(results, winner) {
-				if score == 0 {
-					score = 1
-				} else {
-					score *= 2
-				}
+				score++
 			}
 		}
-		fmt.Printf("card with winners %+v and results %+v with score %d\n", winners, results, score)
-		total += score
+		cards[i] = score
+	}
+	total := 0
+	for card := range cards {
+		total += win(cards, card)
 	}
 	fmt.Printf("total: %d\n", total)
 	return nil
+}
+
+func win(cards []int, card int) int {
+	total := 1
+	score := cards[card]
+	//fmt.Printf("scoring card %d, searching next %d cards\n", card+1, score)
+	for i := card + 1; i <= card+score; i++ {
+		total += win(cards, i)
+	}
+	return total
 }
