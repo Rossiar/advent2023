@@ -20,34 +20,39 @@ func main() {
 }
 
 type Num struct {
+	Gear  string
 	Value string
 	X, Y  int
 }
 
 func task(lines []string) error {
-	allNums := make([]Num, 0)
+	total := 0
 	for y, line := range lines {
 		for x, char := range line {
-			if unicode.IsDigit(char) || char == '.' {
+			if char != '*' {
 				continue
 			}
-			fmt.Printf("found symbol %c at (%d, %d)\n", char, x, y)
+			fmt.Printf("found gear %c at (%d, %d)\n", char, x, y)
 			nums, err := findNumbers(lines, x, y)
 			if err != nil {
 				return err
 			}
-			allNums = append(allNums, nums...)
+			uniqueNums := slices.Compact(nums)
+			if len(uniqueNums) != 2 {
+				continue
+			}
+			ratio := 1
+			for _, num := range uniqueNums {
+				val, err := strconv.Atoi(num.Value)
+				if err != nil {
+					return fmt.Errorf("(%d,%d): %w", num.X, num.Y, err)
+				}
+				ratio *= val
+			}
+			total += ratio
 		}
 	}
-	total := 0
-	uniqueNums := slices.Compact(allNums)
-	for _, num := range uniqueNums {
-		val, err := strconv.Atoi(num.Value)
-		if err != nil {
-			return fmt.Errorf("(%d,%d): %w", num.X, num.Y, err)
-		}
-		total += val
-	}
+
 	fmt.Printf("total: %d\n", total)
 	return nil
 }
