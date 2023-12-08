@@ -3,6 +3,8 @@ package advent2023
 import (
 	"bufio"
 	"os"
+	"strconv"
+	"strings"
 )
 
 func ReadLinesFromFile(name string) ([]string, error) {
@@ -16,6 +18,19 @@ func ReadLinesFromFile(name string) ([]string, error) {
 		lines = append(lines, scan.Text())
 	}
 	return lines, nil
+}
+
+func ReadIntsFromString(src string) ([]int, error) {
+	ss := strings.Fields(src)
+	nums := make([]int, len(ss))
+	for i, s := range ss {
+		num, err := strconv.Atoi(s)
+		if err != nil {
+			return nil, err
+		}
+		nums[i] = num
+	}
+	return nums, nil
 }
 
 func Reverse(s string) string {
