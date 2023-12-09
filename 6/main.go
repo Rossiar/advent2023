@@ -16,12 +16,12 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if err := task2(lines); err != nil {
+	if err := Task2(lines); err != nil {
 		panic(err.Error())
 	}
 }
 
-func task1(lines []string) error {
+func Task1(lines []string) error {
 	times, err := aoc.ReadIntsFromString(strings.TrimPrefix(lines[0], "Time:"))
 	if err != nil {
 		return err
@@ -50,7 +50,7 @@ func task1(lines []string) error {
 	return nil
 }
 
-func task2(lines []string) error {
+func Task2(lines []string) error {
 	clean := func(line, prefix string) (int, error) {
 		trimmed := strings.TrimPrefix(line, prefix)
 		cleaned := strings.ReplaceAll(trimmed, " ", "")

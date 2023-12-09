@@ -12,11 +12,15 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if err := task(lines); err != nil {
+	if err := Task1(lines); err != nil {
 		panic(err.Error())
 	}
 }
 
-func task(lines []string) error {
+func Task1(lines []string) error {
+	return nil
+}
+
+func Task2(lines []string) error {
 	return nil
 }
