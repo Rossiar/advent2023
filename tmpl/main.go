@@ -1,13 +1,13 @@
 package main
 
 import (
-	"flag"
+	"os"
 
 	aoc "github.com/rossiar/advent2023"
 )
 
 func main() {
-	filename := flag.Args()[0]
+	filename := os.Args[1]
 	lines, err := aoc.ReadLinesFromFile(filename)
 	if err != nil {
 		panic(err.Error())
