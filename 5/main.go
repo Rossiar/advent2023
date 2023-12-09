@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-	"slices"
 	"strings"
 
 	aoc "github.com/rossiar/advent2023"
@@ -25,7 +24,7 @@ func main() {
 }
 
 type data struct {
-	Seeds                 []int
+	Seeds                 []seedRange
 	SeedsToSoil           mapping
 	SoilToFertilizer      mapping
 	FertilizerToWater     mapping
@@ -33,6 +32,11 @@ type data struct {
 	LightToTemperature    mapping
 	TemperatureToHumidity mapping
 	HumidityToLocation    mapping
+}
+
+type seedRange struct {
+	Start int
+	End   int
 }
 
 type mapping []entry
@@ -57,7 +61,7 @@ func (m mapping) Map(src int) int {
 func parse(lines []string) (*data, error) {
 	var err error
 	d := &data{
-		Seeds:                 make([]int, 0),
+		Seeds:                 make([]seedRange, 0),
 		SeedsToSoil:           make([]entry, 0),
 		SoilToFertilizer:      make([]entry, 0),
 		FertilizerToWater:     make([]entry, 0),
@@ -67,9 +71,17 @@ func parse(lines []string) (*data, error) {
 		HumidityToLocation:    make([]entry, 0),
 	}
 	seeds := strings.TrimPrefix(lines[0], "seeds: ")
-	d.Seeds, err = aoc.ReadIntsFromString(seeds)
+	seedRanges, err := aoc.ReadIntsFromString(seeds)
 	if err != nil {
 		return nil, err
+	}
+	for i := 0; i < len(seedRanges); i += 2 {
+		d.Seeds = append(d.Seeds,
+			seedRange{
+				Start: seedRanges[i],
+				End:   seedRanges[i] + seedRanges[i+1],
+			},
+		)
 	}
 	var toAdd *mapping
 	toAdd = &d.SeedsToSoil
@@ -102,8 +114,8 @@ func parse(lines []string) (*data, error) {
 			return nil, err
 		}
 		*toAdd = append(*toAdd, entry{
-			Dest:  nums[0],
-			Src:   nums[1],
+			Dest:  nums[1],
+			Src:   nums[0],
 			Range: nums[2],
 		})
 	}
@@ -112,19 +124,26 @@ func parse(lines []string) (*data, error) {
 }
 
 func task(in *data) error {
-	locations := make([]int, len(in.Seeds))
-	for i, seed := range in.Seeds {
-		soil := in.SeedsToSoil.Map(seed)
-		fert := in.SoilToFertilizer.Map(soil)
-		water := in.FertilizerToWater.Map(fert)
-		light := in.WaterToLight.Map(water)
-		temp := in.LightToTemperature.Map(light)
-		hum := in.TemperatureToHumidity.Map(temp)
-		loc := in.HumidityToLocation.Map(hum)
-		fmt.Printf("seed %d, soil %d, fertilizer %d, water: %d, light: %d, temperature: %d, humidity: %d, location %d\n",
-			seed, soil, fert, water, light, temp, hum, loc)
-		locations[i] = loc
+	location := 0
+	found := false
+	for {
+		hum := in.HumidityToLocation.Map(location)
+		temp := in.TemperatureToHumidity.Map(hum)
+		light := in.LightToTemperature.Map(temp)
+		water := in.WaterToLight.Map(light)
+		fert := in.FertilizerToWater.Map(water)
+		soil := in.SoilToFertilizer.Map(fert)
+		seed := in.SeedsToSoil.Map(soil)
+		for _, seedRange := range in.Seeds {
+			if seed >= seedRange.Start && seed <= seedRange.End {
+				found = true
+			}
+		}
+		if found {
+			break
+		}
+		location++
 	}
-	fmt.Printf("lowest location: %d\n", slices.Min(locations))
+	fmt.Printf("lowest location: %d\n", location)
 	return nil
 }
