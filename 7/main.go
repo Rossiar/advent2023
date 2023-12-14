@@ -26,7 +26,6 @@ var CardStrength = map[rune]int{
 	'A': 14,
 	'K': 13,
 	'Q': 12,
-	'J': 11,
 	'T': 10,
 	'9': 9,
 	'8': 8,
@@ -36,6 +35,7 @@ var CardStrength = map[rune]int{
 	'4': 4,
 	'3': 3,
 	'2': 2,
+	'J': 1,
 }
 
 type HandType int32
@@ -56,12 +56,15 @@ func GetHandType(hand string) HandType {
 	for _, char := range hand {
 		charBuckets[char]++
 	}
+	numJokers := charBuckets['J']
+	delete(charBuckets, 'J')
 	max := 0
 	for _, count := range charBuckets {
 		if count > max {
 			max = count
 		}
 	}
+	max += numJokers
 	switch max {
 	case 1:
 		return HighCard
@@ -86,6 +89,7 @@ func GetHandType(hand string) HandType {
 type hand struct {
 	Bid   int
 	Cards string
+	Joker bool
 	Type  HandType
 }
 
@@ -100,6 +104,7 @@ func Task1(lines []string) error {
 		hands[i] = hand{
 			Cards: rawHand,
 			Bid:   bid,
+			Joker: strings.Contains(rawHand, "J"),
 			Type:  GetHandType(rawHand),
 		}
 	}
@@ -128,9 +133,7 @@ func Task1(lines []string) error {
 	//log.Print(hands)
 	total := 0
 	for i, hand := range hands {
-		rank := i + 1
-		score := hand.Bid * rank
-		total += score
+		total += hand.Bid * (i + 1)
 	}
 	log.Print(total)
 	return nil
