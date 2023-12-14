@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 
 	aoc "github.com/rossiar/advent2023"
@@ -15,12 +16,12 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if err := task(lines); err != nil {
+	if err := Task2(lines); err != nil {
 		panic(err.Error())
 	}
 }
 
-func task(lines []string) error {
+func Task1(lines []string) error {
 	times, err := aoc.ReadIntsFromString(strings.TrimPrefix(lines[0], "Time:"))
 	if err != nil {
 		return err
@@ -46,5 +47,39 @@ func task(lines []string) error {
 		total *= waysToWin
 	}
 	log.Printf("total: %d", total)
+	return nil
+}
+
+func Task2(lines []string) error {
+	clean := func(line, prefix string) (int, error) {
+		trimmed := strings.TrimPrefix(line, prefix)
+		cleaned := strings.ReplaceAll(trimmed, " ", "")
+		return strconv.Atoi(cleaned)
+	}
+	raceLength, err := clean(lines[0], "Time:")
+	if err != nil {
+		return err
+	}
+	recordDist, err := clean(lines[1], "Distance:")
+	if err != nil {
+		return err
+	}
+	waysToWin := 0
+	lastDist := -1
+	i := 0
+	for timeHeld := 1; timeHeld <= raceLength; timeHeld++ {
+		timeToRace := raceLength - timeHeld
+		dist := timeHeld * timeToRace
+		if dist > recordDist {
+			waysToWin++
+		}
+		if dist < lastDist && dist < recordDist {
+			// no longer increasing, stop processing
+			break
+		}
+		lastDist = dist
+		i++
+	}
+	log.Printf("ways: %d, iterations: %d", waysToWin, i)
 	return nil
 }
