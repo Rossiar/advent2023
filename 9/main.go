@@ -15,7 +15,7 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if err := Task1(lines); err != nil {
+	if err := Task2(lines); err != nil {
 		panic(err.Error())
 	}
 }
@@ -64,5 +64,34 @@ func diffs(nums []int) []int {
 }
 
 func Task2(lines []string) error {
+	total := 0
+	for li, line := range lines {
+		nums, err := aoc.ReadIntsFromString(line)
+		if err != nil {
+			return fmt.Errorf("error on line %d: %w", li, err)
+		}
+		inputs := [][]int{nums}
+		for {
+			input := diffs(inputs[len(inputs)-1])
+			inputs = append(inputs, input)
+			empty := make([]int, len(input))
+			if slices.Equal(input, empty) {
+				break
+			}
+		}
+		for i := len(inputs) - 2; i >= 0; i-- {
+			current := inputs[i]
+			prev := inputs[i+1]
+			if len(prev) == 0 {
+				continue
+			}
+			value := current[0] - prev[0]
+			inputs[i] = append([]int{value}, inputs[i]...)
+			if i == 0 {
+				total += value
+			}
+		}
+	}
+	log.Println(total)
 	return nil
 }
