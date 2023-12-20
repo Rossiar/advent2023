@@ -16,17 +16,14 @@ func main() {
 	if err != nil {
 		panic(err.Error())
 	}
-	if err := Task1(lines); err != nil {
+	if err := Task2(lines); err != nil {
 		panic(err.Error())
 	}
 }
 
 func Task1(lines []string) error {
-	expanded, galaxies := expand(lines)
-	for _, line := range expanded {
-		log.Println(line)
-	}
-	log.Println(galaxies)
+	galaxies := expand(lines, 1)
+	log.Println(len(galaxies))
 	total := 0
 	pairs := make([]pair, 0)
 	for self, galaxy := range galaxies {
@@ -37,7 +34,26 @@ func Task1(lines []string) error {
 			pairs = append(pairs, pair{fmt.Sprintf("%d->%d", self+1, i+1), galaxy, target, dist})
 		}
 	}
-	log.Println(pairs)
+	log.Println(len(pairs))
+	//log.Println(pairs)
+	log.Println(total)
+	return nil
+}
+
+func Task2(lines []string) error {
+	galaxies := expand(lines, 1000000)
+	log.Println(len(galaxies))
+	total := 0
+	pairs := make([]pair, 0)
+	for self, galaxy := range galaxies {
+		for i := self + 1; i < len(galaxies); i++ {
+			target := galaxies[i]
+			dist := diff(galaxy.X, target.X) + diff(galaxy.Y, target.Y)
+			total += dist
+			pairs = append(pairs, pair{fmt.Sprintf("%d->%d", self+1, i+1), galaxy, target, dist})
+		}
+	}
+	log.Println(len(pairs))
 	//log.Println(pairs)
 	log.Println(total)
 	return nil
@@ -61,49 +77,38 @@ type point struct {
 	X, Y int
 }
 
-func expand(lines []string) ([]string, []point) {
-	for i := 0; i < len(lines); i++ {
-		line := lines[i]
-		if strings.Contains(line, "#") {
-			continue
-		}
-		// expand row
-		lines = append(lines[:i+1], lines[i:]...)
-		lines[i] = line
-		i++
+func expand(lines []string, expandBy int) []point {
+	if expandBy != 1 {
+		expandBy--
 	}
-	for i := 0; i < len(lines[0]); i++ {
-		hasGalaxy := false
-		for j := 0; j < len(lines); j++ {
-			if lines[j][i] == '#' {
-				hasGalaxy = true
-				break
-			}
-		}
-		if hasGalaxy {
-			continue
-		}
-		// expand column
-		for j := 0; j < len(lines); j++ {
-			line := []rune(lines[j])
-			line = append(line[:i+1], line[i:]...)
-			line[i] = '.'
-			lines[j] = string(line)
-		}
-		i++
-	}
+	modX := 0
+	modY := 0
 	galaxies := make([]point, 0)
 	for y := 0; y < len(lines); y++ {
-		line := lines[y]
-		for x := 0; x < len(line); x++ {
-			if line[x] == '#' {
-				galaxies = append(galaxies, point{x, y})
+		if !strings.Contains(lines[y], "#") {
+			modY += expandBy
+			continue
+		}
+		for x := 0; x < len(lines[y]); x++ {
+			hasGalaxy := false
+			for s := 0; s < len(lines); s++ {
+				if lines[s][x] == '#' {
+					hasGalaxy = true
+					break
+				}
+			}
+			if !hasGalaxy {
+				modX += expandBy
+				continue
+			}
+			if lines[y][x] == '#' {
+				galaxies = append(galaxies, point{
+					X: x + modX,
+					Y: y + modY,
+				})
 			}
 		}
+		modX = 0
 	}
-	return lines, galaxies
-}
-
-func Task2(lines []string) error {
-	return nil
+	return galaxies
 }
